@@ -1,0 +1,8 @@
+#!/bin/bash
+
+LOCAL_IP=$(ipconfig getifaddr $(route get default | grep interface | awk '{print $2}'))
+PUBLIC_IP=$(curl -s ifconfig.me)
+
+echo "Local IP:  $LOCAL_IP"
+echo "Public IP: $PUBLIC_IP"
+
