@@ -6,9 +6,24 @@ set -euo pipefail
 # -u: treat unset variables as errors
 # -o pipefail: fail pipeline if any command fails
 
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-# Get absolute path of the directory where this script is located
-# This ensures script works no matter where it's executed from
+REPO_URL="https://github.com/sandunsudara/dev-cli-tools.git"
+# Canonical repo location, used as a fallback when there's no local clone
+# (e.g. when this script is run via `curl ... | bash` and $0 is just "bash",
+# so dirname "$0" can't point at a real repo directory on disk)
+
+CANDIDATE_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd || true)"
+# Try to resolve the directory this script lives in. Only meaningful when
+# the script is executed as a real file (e.g. ./install.sh from a clone).
+
+if [ -n "$CANDIDATE_DIR" ] && [ -d "$CANDIDATE_DIR/bin" ]; then
+  REPO_DIR="$CANDIDATE_DIR"
+  # Local clone case: bin/ sits right next to this script, use it directly
+else
+  TMP_DIR="$(mktemp -d)"
+  # No local bin/ found (curl-pipe case) - clone the repo into a temp dir
+  git clone --depth 1 "$REPO_URL" "$TMP_DIR" >/dev/null 2>&1
+  REPO_DIR="$TMP_DIR"
+fi
 
 INSTALL="$HOME/.dev-cli-tools"
 # Define installation directory in user's home folder
