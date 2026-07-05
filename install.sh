@@ -24,10 +24,12 @@ chmod +x "$INSTALL/bin"/* || true
 # Make all copied files executable
 # '|| true' prevents script from failing if no files exist or chmod errors occur
 
-RC="$HOME/.zshrc"; [ -n "${BASH_VERSION:-}" ] && RC="$HOME/.bashrc"
-# Detect shell configuration file:
-# - default to zsh (.zshrc)
-# - if running in bash, switch to .bashrc
+RC="$HOME/.bashrc"; [ "$(basename "${SHELL:-}")" = "zsh" ] && RC="$HOME/.zshrc"
+# Detect the user's actual LOGIN shell via $SHELL (set by the OS), not which
+# shell happens to be executing this script right now.
+# BASH_VERSION is unreliable here: piping into bash (curl ... | bash) always
+# sets BASH_VERSION, which would incorrectly point to .bashrc even for zsh
+# users. $SHELL reflects the shell the user actually uses day to day.
 
 LINE='export PATH="$HOME/.dev-cli-tools/bin:$PATH"'
 # PATH export line that enables global access to installed CLI tools
